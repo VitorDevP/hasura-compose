@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres
+    container_name: db
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DB_USER-hasura}
+      POSTGRES_PASSWORD: ${DB_PASSWORD-hasura}
+      POSTGRES_DB: ${DB_NAME:-hasura}
+    
+  hasura:
+    image: hasura/graphql-engine
+    # restart: unless-stopped
+    env_file: .env
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${DB_USER-hasura}:${DB_PASSWORD-hasura}@${DB_HOST-db}:${DB_PORT-5432}/${DB_NAME-hasura}
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      ## uncomment next line to set an admin secret
+      HASURA_GRAPHQL_ADMIN_SECRET: ${ADMIN_SECRET}
+    command:
+    - graphql-engine
+    - serve
+    ports:
+      - ${PORT-8080}:8080
